@@ -5,8 +5,8 @@ FROM python:3.8-slim
 WORKDIR /app
 
 # Copy the current directory contents into the container at /app
-COPY . /app
-
+COPY templates /app
+COPY static /app
 # Install any needed packages specified in requirements.txt
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
@@ -17,7 +17,7 @@ COPY supervisord.conf /etc/supervisord.conf
 EXPOSE 80
 
 # Define environment variable
-ENV FLASK_APP=main.py
+ENV FLASK_APP=app.py
 
 # Start supervisord
 CMD ["supervisord", "-c", "/etc/supervisord.conf"]
