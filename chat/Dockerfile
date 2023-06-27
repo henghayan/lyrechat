@@ -17,4 +17,4 @@ EXPOSE 80
 ENV FLASK_APP=app.py
 
 # Start supervisord
-CMD ["supervisord", "-c", "/etc/supervisord.conf"]
+CMD ["supervisord", "-c", "/supervisord.conf"]
