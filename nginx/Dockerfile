@@ -2,7 +2,7 @@
 FROM nginx
 
 # 将你的nginx配置文件复制到容器中
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY nginx.conf  /etc/nginx/conf.d/nginx.conf
 
 # 暴露端口
 EXPOSE 80
