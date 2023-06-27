@@ -19,9 +19,8 @@
             <a href="{{ url_for('logout') }}">Logout</a>
         </div>
     </div>
-
-
     <script>
+
         document.addEventListener('DOMContentLoaded', function () {
             const askForm = document.getElementById('ask-form');
             const submitButton = askForm.querySelector('button[type="submit"]');
@@ -36,13 +35,9 @@
                 messagesDiv.insertAdjacentHTML('beforeend', '<p>' + messageText + '</p>');
                 document.getElementById('loading').style.display = 'inline';
                 messageInput.value = '';
-                submitButton.disabled = true;
+                submitButton.disabled = true; // Disable the send button here
 
                 var aiResponse = document.createElement('p');
-                var aiPrefix = document.createTextNode('AI: ');
-                var aiText = document.createTextNode('');  // 创建一个空的文本节点
-                aiResponse.appendChild(aiPrefix);
-                aiResponse.appendChild(aiText);
                 messagesDiv.appendChild(aiResponse);
 
                 fetch('/api/ask?message=' + encodeURIComponent(userMessage))
@@ -51,18 +46,32 @@
                             throw new Error("Server error");
                         }
                         const reader = response.body.getReader();
+                        let textBuffer = '';
+                        let timer = null;
+
+                        const updateUI = () => {
+                            aiResponse.innerHTML = 'AI: ' + textBuffer;
+                            timer = null;
+                        };
 
                         const handleChunk = ({done, value}) => {
                             if (done) {
-                                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                                if (timer !== null) {
+                                    clearTimeout(timer);
+                                }
+                                updateUI();
                                 return;
                             }
 
                             let text = new TextDecoder("utf-8").decode(value);
-                            {#text = text.substring(5);#}
-                            console.log("text", text)
-                            aiText.appendData(text);  // 在文本节点后添加新的文本
+                            textBuffer = text.substring(5);
 
+                            if (timer !== null) {
+                                clearTimeout(timer);
+                            }
+
+                            timer = setTimeout(updateUI, 100);
+                            messagesDiv.scrollTop = messagesDiv.scrollHeight; // 聚焦在最新的消息上
                             return reader.read().then(handleChunk);
                         };
                         document.getElementById('loading').style.display = 'none';
@@ -74,7 +83,7 @@
                         aiResponse.innerHTML = '网络波动:请刷新页面重试，或联系研发处理';
                     })
                     .finally(() => {
-                        submitButton.disabled = false;
+                        submitButton.disabled = false; // Enable the send button her
                     });
 
             });
@@ -91,6 +100,7 @@
             });
         });
 
+
         var history_message = 0;
 
         function getHistory() {
@@ -106,9 +116,10 @@
                 });
         }
 
+
         function displayHistoryMessages(messages) {
             if (messages.length === 0) {
-                return;
+                return; // 历史数据为空，不做处理
             }
 
             var messagesDiv = document.getElementById('messages');
@@ -120,9 +131,45 @@
                 messagesDiv.insertAdjacentHTML('afterbegin', '<p>' + messageText + '</p>');
             }
 
+            // 将滚动条位置调整为新加载的历史消息之后的位置
             messagesDiv.scrollTop = messagesDiv.scrollHeight - oldScrollHeight;
         }
+
+        function displayNewAIMessage(answer) {
+            var messagesDiv = document.getElementById('messages');
+            var latestMessageText = 'AI: ' + answer;
+
+            // 如果是 AI 的回答，缓慢显示
+            var target = document.createElement('p');
+            messagesDiv.appendChild(target);
+            slowType(target, latestMessageText, 0);
+
+            messagesDiv.scrollTop = messagesDiv.scrollHeight; // 聚焦在最新的消息上
+        }
+
+
+        function slowType(element, text, index) {
+            if (index < text.length) {
+                var character = text[index];
+                if (character === '<') {
+                    var tagCloseIndex = text.indexOf('>', index);
+                    if (tagCloseIndex !== -1) {
+                        element.innerHTML += text.slice(index, tagCloseIndex + 1);
+                        index = tagCloseIndex + 1;
+                    }
+                } else {
+                    element.innerHTML += character;
+                    index++;
+                }
+
+                setTimeout(function () {
+                    slowType(element, text, index);
+                }, 50);
+            }
+        }
+
+
     </script>
 
-
 {% endblock %}
+

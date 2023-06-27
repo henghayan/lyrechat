@@ -141,7 +141,8 @@ def ask():
             if data['finish_reason'] is None:
                 res_token = data['delta'].get('content', None)
                 res += res_token if res_token else ""
-                yield f"data: {res}\n\n"
+                print(f"res,{res_token},")
+                yield res_token
         current_user_messages.extend([{"role": "user", "content": user_message}, {"role": "assistant", "content": res}])
 
     return Response(generate(), mimetype='text/event-stream')

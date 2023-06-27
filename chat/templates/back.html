@@ -1,0 +1,23 @@
+
+                {#fetch('/api/ask?message=' + encodeURIComponent(userMessage))#}
+                {#    .then(response => {#}
+                {#        const reader = response.body.getReader();#}
+                {##}
+                {#        // Function to handle each chunk of data#}
+                {#        const handleChunk = ({done, value}) => {#}
+                {#            if (done) {#}
+                {#                return;#}
+                {#            }#}
+                {#            // Convert bytes to text#}
+                {#            let text = new TextDecoder("utf-8").decode(value);#}
+                {#            if (text.startsWith('data: ')) {#}
+                {#                console.log(text)#}
+                {#                text = text.substring(5);#}
+                {#            }#}
+                {#            // 更新AI的回复#}
+                {#            aiResponse.innerHTML = 'AI: ' + text;#}
+                {#            return reader.read().then(handleChunk);#}
+                {#        };#}
+                {#        document.getElementById('loading').style.display = 'none';#}
+                {#        return reader.read().then(handleChunk);#}
+                {#    });#}
